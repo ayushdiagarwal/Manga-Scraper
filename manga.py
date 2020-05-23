@@ -11,6 +11,7 @@ import sys
 import img2pdf
 from pathlib import Path
 
+save_path = Path(__file__).parent.resolve()
 # Sample Url = https://kissmanga.com/Manga/Great-Teacher-Onizuka/
 driver_path = os.environ.get("chromedriver")
 # brave_path = "/usr/bin/brave-browser-stable"
@@ -45,7 +46,7 @@ class Download:
 			self.vol += 1
 
 	def download_chapter(self, url):
-		os.chdir(Path(__file__).parent.resolve())
+		os.chdir(save_path)
 		# Making direcory and putting this stuff in that directory
 		try:
 			os.mkdir((self.manga_name + "/" + f"Chapter {self.vol}"))
