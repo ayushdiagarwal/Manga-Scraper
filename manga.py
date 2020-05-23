@@ -10,10 +10,14 @@ import os
 import sys
 import img2pdf
 from pathlib import Path
+from selenium.webdriver.chrome.options import Options
 
 save_path = Path(__file__).parent.resolve()
 # Sample Url = https://kissmanga.com/Manga/Great-Teacher-Onizuka/
 driver_path = os.environ.get("chromedriver")
+Options = Options()
+Options.headless = True
+print("Launcing Web browser Silently...")
 # brave_path = "/usr/bin/brave-browser-stable"
 # option = webdriver.ChromeOptions()
 # option.binary_location = brave_path
@@ -22,6 +26,7 @@ driver_path = os.environ.get("chromedriver")
 class Download:
 	# Getting all chapter urls and slicing them in range with user's request
 	def get_chapters(self):
+		print(f"Getting chapters from {self.manga_name}...Please Wait")
 		try:
 			title_tag = WebDriverWait(self.browser, 10).until(EC.presence_of_element_located((By.CLASS_NAME,"bigChar")))
 			title_text = title_tag.text
@@ -37,6 +42,7 @@ class Download:
 
 		self.vol = self.low_ch
 		try:
+			print(f"Making {self.manga_name} directory...")
 			os.mkdir(self.manga_name)
 		except:
 			pass
@@ -47,8 +53,9 @@ class Download:
 
 	def download_chapter(self, url):
 		os.chdir(save_path)
-		# Making direcory and putting this stuff in that directory
+		# Making directory and putting this stuff in that directory
 		try:
+			print("Making chapter directory...")
 			os.mkdir((self.manga_name + "/" + f"Chapter {self.vol}"))
 			dir_name = f"Chapter {self.vol}"
 			count = 1
@@ -85,19 +92,19 @@ class Download:
 
 
 	def jpg_to_pdf(self):
+		print("Making PDF...")
 		os.chdir(f"{self.manga_name}/Chapter {self.vol}/")
 		with open(f"Chapter {self.vol}.pdf", "wb") as f:
 			f.write(img2pdf.convert([i for i in sorted(os.listdir(), key=len) if i.endswith(".jpg")]))
 
 
 	def basic(self):
-		self.browser = webdriver.Chrome(driver_path)
+		self.browser = webdriver.Chrome(driver_path, options=Options)
 		
 		self.url = input("Enter the url of the manga: ")
 		self.manga_name = self.url.split("/")[-1]
 		if self.manga_name == "":
 			self.manga_name = self.url.split("/")[-2]
-		print(self.manga_name)
 		self.low_ch = int(input("From Which Chapter: "))
 		self.high_ch = int(input("To which Chapters: "))
 		try:
@@ -111,5 +118,3 @@ class Download:
 
 hey = Download()
 hey.basic()
-
-
