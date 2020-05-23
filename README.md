@@ -10,11 +10,11 @@ This script downloads manga from kissmanga.com
 * [Bugs](https://github.com/diayush/Manga-Scrapper/#Bugs)
 
 ## Installation
-* Install 3.8 from [here]
-* Install git from [here]
+* Install 3.8 from [here](https://www.python.org/downloads/release/python-382/)
+* Install git from [here](https://git-scm.com/downloads)
 * Run `git clone https://github.com/diayush/Manga-Scrapper.git`
 * Run `pip install -r requirements.txt`
-* Download ChromeDriver From [here]
+* Download ChromeDriver From [here](https://chromedriver.chromium.org/downloads)
 * Add the location of ChromeDriver into environmental variables and save it as "chromedriver"
 
 ## Usuage
