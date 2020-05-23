@@ -33,7 +33,7 @@ This script downloads manga from kissmanga.com
 
 * If you're using brave browser or a adblocker, a pop-up might come in between and might give an error, and you might have to retry
 * There's a chance if you download too many pages that kissmanga.com might stop the process as you're sending too many requests in a short time and might give an error. You can then try running the script again after 10 seconds.
-* This script is still a lot buggy but usually rerunnning the script will solves the problem.
+* This script is still a lot buggy but usually rerunnning the script will solve the problem.
 
 
 
