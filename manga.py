@@ -1,3 +1,4 @@
+# Importing Stuff
 from selenium import webdriver
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.support.ui import Select
@@ -7,20 +8,18 @@ from selenium.webdriver.common.by import By
 import urllib.request 
 import os
 import sys
-import PIL.Image
 import img2pdf
 from pathlib import Path
 
-print("Which Browser You Want?\n1)Chrome\n2)Brave")
-which = input()
-driver_path = os.environ.get("chrome_81")
-brave_path = "/usr/bin/brave-browser-stable"
-option = webdriver.ChromeOptions()
-option.binary_location = brave_path
+# Sample Url = https://kissmanga.com/Manga/Great-Teacher-Onizuka/
+driver_path = os.environ.get("chromedriver")
+# brave_path = "/usr/bin/brave-browser-stable"
+# option = webdriver.ChromeOptions()
+# option.binary_location = brave_path
 # ----------------------------------------------------------
 
 class Download:
-		
+	# Getting all chapter urls and slicing them in range with user's request
 	def get_chapters(self):
 		try:
 			title_tag = WebDriverWait(self.browser, 10).until(EC.presence_of_element_located((By.CLASS_NAME,"bigChar")))
@@ -91,21 +90,15 @@ class Download:
 
 
 	def basic(self):
-		if which == 1:
-			self.browser = webdriver.Chrome(driver_path)
-		elif which == 2:
-			self.browser = webdriver.Chrome(executable_path=driver_path, options=option)
+		self.browser = webdriver.Chrome(driver_path)
 		
-		# self.url = input("Enter the url of the manga: ")
-		self.url = "https://kissmanga.com/Manga/Great-Teacher-Onizuka/"
+		self.url = input("Enter the url of the manga: ")
 		self.manga_name = self.url.split("/")[-1]
 		if self.manga_name == "":
 			self.manga_name = self.url.split("/")[-2]
 		print(self.manga_name)
 		self.low_ch = int(input("From Which Chapter: "))
 		self.high_ch = int(input("To which Chapters: "))
-		# self.low_ch = 2
-		# self.high_ch = 2
 		try:
 			self.browser.get(self.url)
 		except:
