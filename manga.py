@@ -99,6 +99,10 @@ class Download:
 			f.write(img2pdf.convert([i for i in natsort.natsorted(os.listdir()) if i.endswith(".jpg")]))
 
 
+	def delete_folder(self):
+		print("Deleting The Images Folder")
+		shutil.rmtree(f"../Chapter {self.vol}/")
+
 	def basic(self):
 		self.browser = webdriver.Chrome(driver_path, options=Options)
 		
