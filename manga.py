@@ -9,6 +9,7 @@ import urllib.request
 import os
 import sys
 import img2pdf
+import shutil
 from pathlib import Path
 from selenium.webdriver.chrome.options import Options
 
@@ -84,6 +85,7 @@ class Download:
 			    count += 1
 
 			self.jpg_to_pdf()
+			self.delete_folder()
 		except FileExistsError: 
 			print(f'Directory "Chapter {self.vol}" Already Exists\nSkipping This Chapter')
 		except PermissionError as e:
@@ -93,9 +95,13 @@ class Download:
 
 	def jpg_to_pdf(self):
 		print("Making PDF...")
-		os.chdir(f"{self.manga_name}/Chapter {self.vol}/")
-		with open(f"Chapter {self.vol}.pdf", "wb") as f:
+		os.chdir(f"{self.manga_name}//Chapter {self.vol}/")
+		with open(f"../Chapter {self.vol}.pdf", "wb") as f:
 			f.write(img2pdf.convert([i for i in sorted(os.listdir(), key=len) if i.endswith(".jpg")]))
+
+	def delete_folder(self):
+		print("Deleting The Images Folder")
+		shutil.rmtree(f"../Chapter {self.vol}/")
 
 
 	def basic(self):
