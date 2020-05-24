@@ -9,9 +9,10 @@ import urllib.request
 import os
 import sys
 import img2pdf
-import shutil
 from pathlib import Path
 from selenium.webdriver.chrome.options import Options
+
+import natsort 
 
 save_path = Path(__file__).parent.resolve()
 # Sample Url = https://kissmanga.com/Manga/Great-Teacher-Onizuka/
@@ -77,15 +78,14 @@ class Download:
 
 			list_of_page_img = self.browser.find_elements_by_xpath('//div[@id="divImage"]/p/img')
 
-
 			for image in list_of_page_img:
 			    url = image.get_attribute("src")
 			    print("Downloading page " + str(count))
-			    urllib.request.urlretrieve(url, (self.manga_name + "/" + dir_name + "/"+ f"Page {count}.jpg"))
+			    page_name=url[url.find('title')+6:-3]
+			    urllib.request.urlretrieve(url, (self.manga_name + "/" + dir_name + "/"+ page_name + ".jpg"))
 			    count += 1
 
 			self.jpg_to_pdf()
-			self.delete_folder()
 		except FileExistsError: 
 			print(f'Directory "Chapter {self.vol}" Already Exists\nSkipping This Chapter')
 		except PermissionError as e:
@@ -95,17 +95,13 @@ class Download:
 
 	def jpg_to_pdf(self):
 		print("Making PDF...")
-		os.chdir(f"{self.manga_name}//Chapter {self.vol}/")
-		with open(f"../Chapter {self.vol}.pdf", "wb") as f:
-			f.write(img2pdf.convert([i for i in sorted(os.listdir(), key=len) if i.endswith(".jpg")]))
-
-	def delete_folder(self):
-		print("Deleting The Images Folder")
-		shutil.rmtree(f"../Chapter {self.vol}/")
+		os.chdir(f"{self.manga_name}/Chapter {self.vol}/")
+		with open(f"Chapter {self.vol}.pdf", "wb") as f:
+			f.write(img2pdf.convert([i for i in natsort.natsorted(os.listdir()) if i.endswith(".jpg")]))
 
 
 	def basic(self):
-		self.browser = webdriver.Chrome(driver_path, options=Options)
+		self.browser = webdriver.Chrome('/home/eusuf/development/Manga-Scrapper/chromedriver', options=Options)
 		
 		self.url = input("Enter the url of the manga: ")
 		self.manga_name = self.url.split("/")[-1]
