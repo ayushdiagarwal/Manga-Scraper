@@ -4,10 +4,14 @@
 This script downloads manga from kissmanga.com
 
 ## Contents
+* [Demo](ttps://github.com/diayush/Manga-Scrapper/#Demo)
 * [Installation](https://github.com/diayush/Manga-Scrapper/#Installation)
 * [Usuage](https://github.com/diayush/Manga-Scrapper/#Usuage)
 * [Features](https://github.com/diayush/Manga-Scrapper/#Features)
 * [Bugs](https://github.com/diayush/Manga-Scrapper/#Bugs)
+
+## Demo
+![](demo.gif)
 
 ## Installation
 * Install 3.8 from [here](https://www.python.org/downloads/release/python-382/)
