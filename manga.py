@@ -81,8 +81,7 @@ class Download:
 			for image in list_of_page_img:
 			    url = image.get_attribute("src")
 			    print("Downloading page " + str(count))
-			    page_name=url[url.find('title')+6:-3]
-			    urllib.request.urlretrieve(url, (self.manga_name + "/" + dir_name + "/"+ page_name + ".jpg"))
+			    urllib.request.urlretrieve(url, (self.manga_name + "/" + dir_name + "/"+ url[url.find('title')+6:-3] + ".jpg"))
 			    count += 1
 
 			self.jpg_to_pdf()
@@ -101,7 +100,7 @@ class Download:
 
 
 	def basic(self):
-		self.browser = webdriver.Chrome('/home/eusuf/development/Manga-Scrapper/chromedriver', options=Options)
+		self.browser = webdriver.Chrome(driver_path, options=Options)
 		
 		self.url = input("Enter the url of the manga: ")
 		self.manga_name = self.url.split("/")[-1]
