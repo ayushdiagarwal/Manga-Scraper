@@ -27,8 +27,7 @@ This script downloads manga from kissmanga.com
 ## Features
 
 * Downloads all images of a chapter and puts them in a seperate folder.
-* All Chapter folders are created inside the manga series folder.
-* Creates A PDF of each chapter in the directory along with the images.
+* Creates A PDF of each chapter outside the directory and deletes the chapter directory as it is no longer needed.
 
 ## Bugs
 
