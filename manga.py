@@ -100,6 +100,18 @@ class Download:
 		with open(f"Chapter {self.vol}.pdf", "wb") as f:
 			f.write(img2pdf.convert([i for i in sorted(os.listdir(), key=len) if i.endswith(".jpg")]))
 
+	def check_if_multiple_pdfs_exist(self):
+		if len(os.listdir()) > 1:
+			print("Multiple PDFs exist in that manga directory. Do you want to to combine them into one?")
+			choice = input('Press "y" for yes and "n" for no')
+		if choice == "y":
+			pass
+		elif choice == "n":
+			pass
+		else:
+			print("Invalid Choice\n")
+			self.check_if_multiple_pdfs_exist()
+
 	def delete_folder(self):
 		print("Deleting The Images Folder")
 		shutil.rmtree(f"../Chapter {self.vol}/")
