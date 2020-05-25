@@ -61,7 +61,10 @@ class Download:
 		os.chdir(save_path)
 		# Making directory and putting this stuff in that directory
 		print("Making chapter directory...")
-		os.mkdir(f"{save_path}{self.manga_name}/Chapter {self.vol}")
+		try:
+			os.mkdir(f"{save_path}{self.manga_name}/Chapter {self.vol}")
+		except:
+			pass
 		# os.mkdir((save_path + self.manga_name + "/" + f"Chapter {self.vol}"))
 		dir_name = f"Chapter {self.vol}"
 		count = 1
@@ -95,10 +98,11 @@ class Download:
 
 	def jpg_to_pdf(self):
 		print("Making PDF...")
-		os.chdir(f"{save_path}/{self.manga_name}//Chapter {self.vol}/")
-		os.chdir("../")
+		os.chdir(f"{save_path}/{self.manga_name}/Chapter {self.vol}/")
 		with open(f"Chapter {self.vol}.pdf", "wb") as f:
 			f.write(img2pdf.convert([i for i in sorted(os.listdir(), key=len) if i.endswith(".jpg")]))
+		os.chdir("../")
+
 
 	def check_if_multiple_pdfs_exist(self):
 		if len(os.listdir()) > 1:
@@ -114,7 +118,7 @@ class Download:
 
 	def delete_folder(self):
 		print("Deleting The Images Folder")
-		shutil.rmtree(f"../Chapter {self.vol}/")
+		shutil.rmtree(f"Chapter {self.vol}/")
 
 
 	def basic(self):
@@ -124,9 +128,9 @@ class Download:
 		self.manga_name = self.url.split("/")[-1]
 		uppercase = [chr(i) for i in range(65,65+26)]
 		lowercase = [chr(i) for i in range(97, 97+26)]
-		self.manga_name = list(self.manga_name)
 		if self.manga_name == "":
 			self.manga_name = self.url.split("/")[-2]
+		self.manga_name = list(self.manga_name)
 		if self.manga_name[0] in lowercase:
 			self.manga_name[0] = self.manga_name[lowercase.index(self.manga_name[0])]
 		self.manga_name = "".join(self.manga_name)
