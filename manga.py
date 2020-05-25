@@ -13,7 +13,10 @@ import shutil
 from pathlib import Path
 from selenium.webdriver.chrome.options import Options
 
-save_path = Path(__file__).parent.resolve()
+# save path for the manga
+# Please put a "/" at the end to indicate the directory
+save_path = "/mnt/2ADAC21CDAC1E463/Docs/Manga/"
+# save_path = Path(__file__).parent.resolve()
 # Sample Url = https://kissmanga.com/Manga/Great-Teacher-Onizuka/
 driver_path = os.environ.get("chromedriver")
 Options = Options()
@@ -33,8 +36,10 @@ class Download:
 			title_text = title_tag.text
 		except TimeoutException:
 		    print("Exception Occured:    TimeoutException")
-		    sys.exit("Couldn't get title!")
+		    sys.exit("Couldn't get title! Please check the URL and the internet connection.")
+		# finding links of all chapters by xpath
 		lis_of_ch = self.browser.find_elements_by_xpath("//tbody/tr/td/a")
+		# reversing them as they are in reversed orde
 		lis_of_ch = lis_of_ch[::-1]
 		self.chapters = []
 		for ch in lis_of_ch:
@@ -44,7 +49,7 @@ class Download:
 		self.vol = self.low_ch
 		try:
 			print(f"Making {self.manga_name} directory...")
-			os.mkdir(self.manga_name)
+			os.mkdir(save_path + self.manga_name)
 		except:
 			pass
 		# os.chdir(self.manga_name)
@@ -55,48 +60,44 @@ class Download:
 	def download_chapter(self, url):
 		os.chdir(save_path)
 		# Making directory and putting this stuff in that directory
+		print("Making chapter directory...")
+		os.mkdir(f"{save_path}{self.manga_name}/Chapter {self.vol}")
+		# os.mkdir((save_path + self.manga_name + "/" + f"Chapter {self.vol}"))
+		dir_name = f"Chapter {self.vol}"
+		count = 1
 		try:
-			print("Making chapter directory...")
-			os.mkdir((self.manga_name + "/" + f"Chapter {self.vol}"))
-			dir_name = f"Chapter {self.vol}"
-			count = 1
-			try:
-				self.browser.get(url)
-			except:
-				self.browser.find_element_by_link_text("Adblock").click()
-				alert = world.browser.switch_to.alert
-				alert.accept()
-			try:
-			        drop_down_list = WebDriverWait(self.browser, 15).until(EC.presence_of_element_located((By.ID,"selectReadType")))
-			except TimeoutException:
-			    print("Exception Occured:    TimeoutException")
-			    sys.exit("Couldn't load chapter!")
-			select = Select(drop_down_list)
-			# Selecting the 'All Pages' option
-			select.select_by_value('1')
+			self.browser.get(url)
+		except:
+			self.browser.find_element_by_link_text("Adblock").click()
+			alert = world.browser.switch_to.alert
+			alert.accept()
+		try:
+		        drop_down_list = WebDriverWait(self.browser, 15).until(EC.presence_of_element_located((By.ID,"selectReadType")))
+		except TimeoutException:
+		    print("Exception Occured:    TimeoutException")
+		    sys.exit("Couldn't load chapter! Please check the internet connection.")
+		select = Select(drop_down_list)
+		# Selecting the 'All Pages' option
+		select.select_by_value('1')
 
-			list_of_page_img = self.browser.find_elements_by_xpath('//div[@id="divImage"]/p/img')
+		list_of_page_img = self.browser.find_elements_by_xpath('//div[@id="divImage"]/p/img')
 
 
-			for image in list_of_page_img:
-			    url = image.get_attribute("src")
-			    print("Downloading page " + str(count))
-			    urllib.request.urlretrieve(url, (self.manga_name + "/" + dir_name + "/"+ f"Page {count}.jpg"))
-			    count += 1
+		for image in list_of_page_img:
+		    url = image.get_attribute("src")
+		    print("Downloading page " + str(count))
+		    urllib.request.urlretrieve(url, (save_path + self.manga_name + "/" + dir_name + "/"+ f"Page {count}.jpg"))
+		    count += 1
 
-			self.jpg_to_pdf()
-			self.delete_folder()
-		except FileExistsError: 
-			print(f'Directory "Chapter {self.vol}" Already Exists\nSkipping This Chapter')
-		except PermissionError as e:
-			print(e)
-
+		self.jpg_to_pdf()
+		self.delete_folder()
 
 
 	def jpg_to_pdf(self):
 		print("Making PDF...")
-		os.chdir(f"{self.manga_name}//Chapter {self.vol}/")
-		with open(f"../Chapter {self.vol}.pdf", "wb") as f:
+		os.chdir(f"{save_path}/{self.manga_name}//Chapter {self.vol}/")
+		os.chdir("../")
+		with open(f"Chapter {self.vol}.pdf", "wb") as f:
 			f.write(img2pdf.convert([i for i in sorted(os.listdir(), key=len) if i.endswith(".jpg")]))
 
 	def delete_folder(self):
@@ -109,8 +110,14 @@ class Download:
 		
 		self.url = input("Enter the url of the manga: ")
 		self.manga_name = self.url.split("/")[-1]
+		uppercase = [chr(i) for i in range(65,65+26)]
+		lowercase = [chr(i) for i in range(97, 97+26)]
+		self.manga_name = list(self.manga_name)
 		if self.manga_name == "":
 			self.manga_name = self.url.split("/")[-2]
+		if self.manga_name[0] in lowercase:
+			self.manga_name[0] = self.manga_name[lowercase.index(self.manga_name[0])]
+		self.manga_name = "".join(self.manga_name)
 		self.low_ch = int(input("From Which Chapter: "))
 		self.high_ch = int(input("To which Chapters: "))
 		try:
