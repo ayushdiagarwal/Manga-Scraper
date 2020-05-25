@@ -2,6 +2,7 @@
 
 ## Introduction
 This script downloads manga from kissmanga.com
+Inspired From [Astrames](https://github.com/Astrames/kissmanga-downloader)
 
 ## Contents
 <!-- * [Demo](ttps://github.com/diayush/Manga-Scrapper/#Demo) -->
