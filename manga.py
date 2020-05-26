@@ -17,9 +17,12 @@ from selenium.webdriver.chrome.options import Options
 # https://kissmanga.com/Manga/Great-Teacher-onizuka/
 
 # save path for the manga
-# Please put a "/" at the end to indicate the directory
 # save_path = "/mnt/2ADAC21CDAC1E463/Docs/Manga/"
-save_path = Path(__file__).parent.resolve()
+save_path = str(Path(__file__).parent.resolve())
+save_path = list(save_path)
+if save_path[-1] != "/":
+	save_path += ["/"]
+save_path = "".join(save_path)
 driver_path = os.environ.get("chromedriver")
 Options = Options()
 Options.headless = True
@@ -34,7 +37,7 @@ class Download:
 			title_text = title_tag.text
 		except TimeoutException:
 		    print("Exception Occured:    TimeoutException")
-		    sys.exit("Couldn't get title! Please check the URL and the internet connection.")
+		    sys.exit("Couldn't get title! Please check the URL and the internet connection.\nPlease Retry")
 		# finding links of all chapters by xpath
 		lis_of_ch = self.browser.find_elements_by_xpath("//tbody/tr/td/a")
 		# reversing them as they are in reversed order
@@ -42,12 +45,15 @@ class Download:
 		self.chapters = []
 		for ch in lis_of_ch:
 			self.chapters.append(ch.get_attribute("href"))
+		print(f"There are {len(self.chapters)} Chapters of {self.manga_name}\nPlease enter the range of chapters.")
+		self.low_ch = int(input("From Which Chapter: "))
+		self.high_ch = int(input("To which Chapter: "))
 		self.chapters = self.chapters[(self.low_ch-1):self.high_ch]
 
 		self.vol = self.low_ch
 		try:
-			print(f"Making {self.manga_name} directory...")
 			os.mkdir(save_path + self.manga_name)
+			print(f"Making {self.manga_name} directory...")
 		except:
 			pass
 		for ch in self.chapters:
@@ -58,9 +64,9 @@ class Download:
 		os.chdir(save_path)
 		self.check_if_chapter_exist()
 		# Making directory and putting this stuff in that directory
-		print("Making chapter directory...")
 		try:
 			os.mkdir(f"{save_path}{self.manga_name}/Chapter {self.vol}")
+			print("Making chapter directory...")
 		except:
 			pass
 		dir_name = f"Chapter {self.vol}"
@@ -75,7 +81,7 @@ class Download:
 		        drop_down_list = WebDriverWait(self.browser, 15).until(EC.presence_of_element_located((By.ID,"selectReadType")))
 		except TimeoutException:
 		    print("Exception Occured:    TimeoutException")
-		    sys.exit("Couldn't load chapter! Please check the internet connection.")
+		    sys.exit("Couldn't load chapter! Please check the internet connection.\nPlease Retry")
 		select = Select(drop_down_list)
 		# Selecting the 'All Pages' option
 		select.select_by_value('1')
@@ -91,7 +97,7 @@ class Download:
 
 		self.jpg_to_pdf()
 		self.delete_folder()
-
+		self.finished()
 
 	def jpg_to_pdf(self):
 		print("Making PDF...")
@@ -137,35 +143,31 @@ class Download:
 
 	# This function checks if the chapter pdf already exist or not
 	def check_if_chapter_exist(self):
-		if f"Chapter {self.vol}.pdf" in os.listdir(self.manga_name):
-			choice = input('Chapter already exists. Do you wanna overwrite?("y" for yes and "n" for no)')
-			if choice == "y" or choice == "Y":
-				print("Overwriting...")
-				os.remove(f"Chapter {self.vol}.pdf")
-			elif choice == "n" or choice == "N":
-				print("Skipping...")
-				if self.vol + 1 <= self.high_ch:
-					self.vol = self.vol + 1
+		try:
+			if f"Chapter {self.vol}.pdf" in os.listdir(self.manga_name):
+				choice = input('Chapter already exists. Do you wanna overwrite?("y" for yes and "n" for no)')
+				if choice == "y" or choice == "Y":
+					print("Overwriting...")
+					os.remove(f"Chapter {self.vol}.pdf")
+				elif choice == "n" or choice == "N":
+					print("Skipping...")
+					if self.vol + 1 <= self.high_ch:
+						self.vol = self.vol + 1
+					else:
+						browser.quit()
+						sys.exit()
+						exit()
 				else:
-					browser.quit()
-					sys.exit()
-					exit()
-			else:
-				print("Invalid Choice. Choose Again")
-				self.check_if_pdf_exist()
-		else:
-			print(os.listdir())
-			print("Chapter Doesn't Exist")
-
-
+					print("Invalid Choice. Choose Again")
+					self.check_if_pdf_exist()
+		except:
+			pass
+		
 
 	def basic(self):
 		self.browser = webdriver.Chrome(driver_path, options=Options)
 		self.url = input("Enter the url of the manga: ")
 		self.change_name()
-		print(self.manga_name)
-		self.low_ch = int(input("From Which Chapter: "))
-		self.high_ch = int(input("To which Chapters: "))
 		try:
 			self.browser.get(self.url)
 		except:
@@ -174,7 +176,9 @@ class Download:
 			alert.accept()
 		self.get_chapters()
 
+	def finished(self):
+		self.browser.quit()
+
 
 hey = Download()
 hey.basic()
-browser.quit()
