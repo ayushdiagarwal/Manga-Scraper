@@ -13,19 +13,17 @@ import shutil
 from pathlib import Path
 from selenium.webdriver.chrome.options import Options
 
+# Sample URL
+# https://kissmanga.com/Manga/Great-Teacher-onizuka/
+
 # save path for the manga
 # Please put a "/" at the end to indicate the directory
 save_path = "/mnt/2ADAC21CDAC1E463/Docs/Manga/"
 # save_path = Path(__file__).parent.resolve()
-# Sample Url = https://kissmanga.com/Manga/Great-Teacher-Onizuka/
 driver_path = os.environ.get("chromedriver")
 Options = Options()
 Options.headless = True
 print("Launcing Web browser Silently...")
-# brave_path = "/usr/bin/brave-browser-stable"
-# option = webdriver.ChromeOptions()
-# option.binary_location = brave_path
-# ----------------------------------------------------------
 
 class Download:
 	# Getting all chapter urls and slicing them in range with user's request
@@ -39,7 +37,7 @@ class Download:
 		    sys.exit("Couldn't get title! Please check the URL and the internet connection.")
 		# finding links of all chapters by xpath
 		lis_of_ch = self.browser.find_elements_by_xpath("//tbody/tr/td/a")
-		# reversing them as they are in reversed orde
+		# reversing them as they are in reversed order
 		lis_of_ch = lis_of_ch[::-1]
 		self.chapters = []
 		for ch in lis_of_ch:
@@ -52,7 +50,6 @@ class Download:
 			os.mkdir(save_path + self.manga_name)
 		except:
 			pass
-		# os.chdir(self.manga_name)
 		for ch in self.chapters:
 			self.download_chapter(ch)
 			self.vol += 1
@@ -65,7 +62,6 @@ class Download:
 			os.mkdir(f"{save_path}{self.manga_name}/Chapter {self.vol}")
 		except:
 			pass
-		# os.mkdir((save_path + self.manga_name + "/" + f"Chapter {self.vol}"))
 		dir_name = f"Chapter {self.vol}"
 		count = 1
 		try:
@@ -99,7 +95,7 @@ class Download:
 	def jpg_to_pdf(self):
 		print("Making PDF...")
 		os.chdir(f"{save_path}/{self.manga_name}/Chapter {self.vol}/")
-		with open(f"Chapter {self.vol}.pdf", "wb") as f:
+		with open(f"../Chapter {self.vol}.pdf", "wb") as f:
 			f.write(img2pdf.convert([i for i in sorted(os.listdir(), key=len) if i.endswith(".jpg")]))
 		os.chdir("../")
 
@@ -120,20 +116,30 @@ class Download:
 		print("Deleting The Images Folder")
 		shutil.rmtree(f"Chapter {self.vol}/")
 
+	# This function does a pretty uneccesary job by changing the name of the manga to a good looking one
+	def change_name(self):
+		self.manga_name = self.url.split("/")[-1]
+		# Making lists of all uppercase and lowercase letters
+		uppercase = [chr(i) for i in range(65,65+26)]
+		lowercase = [chr(i) for i in range(97, 97+26)]
+		# Getting the manga name from the url
+		if self.manga_name == "":
+			self.manga_name = self.url.split("/")[-2]
+		# changing the manga letters to uppercase and lowercase accordindly
+		self.manga = self.manga_name.split("-")
+		for i in range(len(self.manga)):
+			tmp = list(self.manga[i])
+			if tmp[0] in lowercase:
+				tmp[0] = uppercase[lowercase.index(self.manga[i][0])]
+				self.manga[i] = "".join(tmp)
+		self.manga_name = " ".join(self.manga)
+
 
 	def basic(self):
 		self.browser = webdriver.Chrome(driver_path, options=Options)
-		
 		self.url = input("Enter the url of the manga: ")
-		self.manga_name = self.url.split("/")[-1]
-		uppercase = [chr(i) for i in range(65,65+26)]
-		lowercase = [chr(i) for i in range(97, 97+26)]
-		if self.manga_name == "":
-			self.manga_name = self.url.split("/")[-2]
-		self.manga_name = list(self.manga_name)
-		if self.manga_name[0] in lowercase:
-			self.manga_name[0] = self.manga_name[lowercase.index(self.manga_name[0])]
-		self.manga_name = "".join(self.manga_name)
+		self.change_name()
+		print(self.manga_name)
 		self.low_ch = int(input("From Which Chapter: "))
 		self.high_ch = int(input("To which Chapters: "))
 		try:
