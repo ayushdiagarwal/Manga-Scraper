@@ -18,8 +18,8 @@ from selenium.webdriver.chrome.options import Options
 
 # save path for the manga
 # Please put a "/" at the end to indicate the directory
-save_path = "/mnt/2ADAC21CDAC1E463/Docs/Manga/"
-# save_path = Path(__file__).parent.resolve()
+# save_path = "/mnt/2ADAC21CDAC1E463/Docs/Manga/"
+save_path = Path(__file__).parent.resolve()
 driver_path = os.environ.get("chromedriver")
 Options = Options()
 Options.headless = True
