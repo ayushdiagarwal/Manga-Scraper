@@ -28,7 +28,7 @@ print("Launcing Web browser Silently...")
 class Download:
 	# Getting all chapter urls and slicing them in range with user's request
 	def get_chapters(self):
-		print(f"Getting chapters from {self.manga_name}...Please Wait")
+		print(f"Getting chapters from {self.manga_name}...\nPlease Wait")
 		try:
 			title_tag = WebDriverWait(self.browser, 10).until(EC.presence_of_element_located((By.CLASS_NAME,"bigChar")))
 			title_text = title_tag.text
@@ -56,6 +56,7 @@ class Download:
 
 	def download_chapter(self, url):
 		os.chdir(save_path)
+		self.check_if_chapter_exist()
 		# Making directory and putting this stuff in that directory
 		print("Making chapter directory...")
 		try:
@@ -134,6 +135,29 @@ class Download:
 				self.manga[i] = "".join(tmp)
 		self.manga_name = " ".join(self.manga)
 
+	# This function checks if the chapter pdf already exist or not
+	def check_if_chapter_exist(self):
+		if f"Chapter {self.vol}.pdf" in os.listdir(self.manga_name):
+			choice = input('Chapter already exists. Do you wanna overwrite?("y" for yes and "n" for no)')
+			if choice == "y" or choice == "Y":
+				print("Overwriting...")
+				os.remove(f"Chapter {self.vol}.pdf")
+			elif choice == "n" or choice == "N":
+				print("Skipping...")
+				if self.vol + 1 <= self.high_ch:
+					self.vol = self.vol + 1
+				else:
+					browser.quit()
+					sys.exit()
+					exit()
+			else:
+				print("Invalid Choice. Choose Again")
+				self.check_if_pdf_exist()
+		else:
+			print(os.listdir())
+			print("Chapter Doesn't Exist")
+
+
 
 	def basic(self):
 		self.browser = webdriver.Chrome(driver_path, options=Options)
@@ -153,3 +177,4 @@ class Download:
 
 hey = Download()
 hey.basic()
+browser.quit()
