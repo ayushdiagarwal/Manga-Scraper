@@ -172,9 +172,10 @@ class Download:
 				elif choice == "n" or choice == "N":
 					print("Skipping...")
 					if self.vol + 1 <= self.high_ch:
+						print("Going to next chapter...")
 						self.vol = self.vol + 1
 					else:
-						browser.quit()
+						self.finished()
 						sys.exit()
 						exit()
 				else:
@@ -185,7 +186,7 @@ class Download:
 
 	# Closes the web browser
 	def finished(self):
+		print("Exiting...")
 		self.browser.quit()
-
 
 Object = Download()
