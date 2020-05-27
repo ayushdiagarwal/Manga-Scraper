@@ -76,6 +76,7 @@ class Download:
 		for ch in self.chapters:
 			self.download_chapter(ch)
 			self.vol += 1
+		self.finished()
 
 	# This downloads each chapter
 	def download_chapter(self, url):
@@ -114,7 +115,6 @@ class Download:
 		# Calling other function to do some stuff
 		self.jpg_to_pdf()
 		self.delete_folder()
-		self.finished()
 
 	# Converting all images to pdf
 	def jpg_to_pdf(self):
@@ -188,5 +188,6 @@ class Download:
 	def finished(self):
 		print("Exiting...")
 		self.browser.quit()
+		sys.exit()
 
 Object = Download()
