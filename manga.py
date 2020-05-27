@@ -15,24 +15,40 @@ from selenium.webdriver.chrome.options import Options
 
 # Sample URL
 # https://kissmanga.com/Manga/Great-Teacher-onizuka/
+# https://kissmanga.com/Manga/Shingeki-no-kyojin/
+# https://kissmanga.com/Manga/monster/
+# https://kissmanga.com/Manga/the-promised-neverland/
 
-# save path for the manga
-# save_path = "/mnt/2ADAC21CDAC1E463/Docs/Manga/"
-save_path = str(Path(__file__).parent.resolve())
+try:
+	# save path for the manga
+	# Please change the path
+	save_path = os.environ.get("manga_path")
+except:
+	save_path = str(Path(__file__).parent.resolve())
 save_path = list(save_path)
 if save_path[-1] != "/":
 	save_path += ["/"]
 save_path = "".join(save_path)
+# Getting chromedriver details
 driver_path = os.environ.get("chromedriver")
 Options = Options()
 Options.headless = True
 print("Launcing Web browser Silently...")
 
 class Download:
+	def __init__(self):
+		# Getting info about the manga
+		self.browser = webdriver.Chrome(driver_path, options=Options)
+		self.url = input("Enter the url of the manga: ")
+		self.change_name()
+		self.browser.get(self.url)
+		self.get_chapters()
+
 	# Getting all chapter urls and slicing them in range with user's request
 	def get_chapters(self):
-		print(f"Getting chapters from {self.manga_name}...\nPlease Wait")
+		print(f"Getting chapters from {self.manga_name}...\nPlease Wait...")
 		try:
+			# This waits for the web page to load properly
 			title_tag = WebDriverWait(self.browser, 10).until(EC.presence_of_element_located((By.CLASS_NAME,"bigChar")))
 			title_text = title_tag.text
 		except TimeoutException:
@@ -46,6 +62,7 @@ class Download:
 		for ch in lis_of_ch:
 			self.chapters.append(ch.get_attribute("href"))
 		print(f"There are {len(self.chapters)} Chapters of {self.manga_name}\nPlease enter the range of chapters.")
+		# Getting range from user
 		self.low_ch = int(input("From Which Chapter: "))
 		self.high_ch = int(input("To which Chapter: "))
 		self.chapters = self.chapters[(self.low_ch-1):self.high_ch]
@@ -55,13 +72,15 @@ class Download:
 			os.mkdir(save_path + self.manga_name)
 			print(f"Making {self.manga_name} directory...")
 		except:
-			pass
+			print(f"{self.manga_name} directory already exists...")
 		for ch in self.chapters:
 			self.download_chapter(ch)
 			self.vol += 1
 
+	# This downloads each chapter
 	def download_chapter(self, url):
 		os.chdir(save_path)
+		# Checking if chapter already exists or not
 		self.check_if_chapter_exist()
 		# Making directory and putting this stuff in that directory
 		try:
@@ -71,12 +90,8 @@ class Download:
 			pass
 		dir_name = f"Chapter {self.vol}"
 		count = 1
-		try:
-			self.browser.get(url)
-		except:
-			self.browser.find_element_by_link_text("Adblock").click()
-			alert = world.browser.switch_to.alert
-			alert.accept()
+		self.browser.get(url)
+		# Waiting for the webpage to load properly
 		try:
 		        drop_down_list = WebDriverWait(self.browser, 15).until(EC.presence_of_element_located((By.ID,"selectReadType")))
 		except TimeoutException:
@@ -86,6 +101,7 @@ class Download:
 		# Selecting the 'All Pages' option
 		select.select_by_value('1')
 
+		# got the list of images
 		list_of_page_img = self.browser.find_elements_by_xpath('//div[@id="divImage"]/p/img')
 
 
@@ -95,10 +111,12 @@ class Download:
 		    urllib.request.urlretrieve(url, (save_path + self.manga_name + "/" + dir_name + "/"+ f"Page {count}.jpg"))
 		    count += 1
 
+		# Calling other function to do some stuff
 		self.jpg_to_pdf()
 		self.delete_folder()
 		self.finished()
 
+	# Converting all images to pdf
 	def jpg_to_pdf(self):
 		print("Making PDF...")
 		os.chdir(f"{save_path}/{self.manga_name}/Chapter {self.vol}/")
@@ -107,6 +125,7 @@ class Download:
 		os.chdir("../")
 
 
+	# This function check if multiple chapters exist and asks to convert them into one 
 	def check_if_multiple_pdfs_exist(self):
 		if len(os.listdir()) > 1:
 			print("Multiple PDFs exist in that manga directory. Do you want to to combine them into one?")
@@ -119,6 +138,7 @@ class Download:
 			print("Invalid Choice\n")
 			self.check_if_multiple_pdfs_exist()
 
+	# This deletes the image folder as it is not needed anymore
 	def delete_folder(self):
 		print("Deleting The Images Folder")
 		shutil.rmtree(f"Chapter {self.vol}/")
@@ -162,23 +182,10 @@ class Download:
 					self.check_if_pdf_exist()
 		except:
 			pass
-		
 
-	def basic(self):
-		self.browser = webdriver.Chrome(driver_path, options=Options)
-		self.url = input("Enter the url of the manga: ")
-		self.change_name()
-		try:
-			self.browser.get(self.url)
-		except:
-			self.browser.find_element_by_link_text("Adblock").click()
-			alert = world.browser.switch_to.alert
-			alert.accept()
-		self.get_chapters()
-
+	# Closes the web browser
 	def finished(self):
 		self.browser.quit()
 
 
-hey = Download()
-hey.basic()
+Object = Download()
