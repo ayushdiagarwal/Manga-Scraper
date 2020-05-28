@@ -8,6 +8,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 # Importing img2pdf to convert jpg to pdf
 import img2pdf
+# importing tqdm for progress bar
+from tqdm import tqdm
 # Importing build-in modules
 import urllib.request 
 import os
@@ -106,13 +108,16 @@ class Download:
 
 		# got the list of images
 		list_of_page_img = self.browser.find_elements_by_xpath('//div[@id="divImage"]/p/img')
-
-
-		for image in list_of_page_img:
-		    url = image.get_attribute("src")
-		    print(f"Downloading Chapter {self.vol} page {str(count)}")
-		    urllib.request.urlretrieve(url, (save_path + self.manga_name + "/" + dir_name + "/"+ f"Page {count}.jpg"))
-		    count += 1
+		chapters_left = len(list_of_page_img) - count
+		# This thing does the downloading work and showing the progess bar
+		with tqdm(total=len(list_of_page_img), desc=f"Downloading Chapter {self.vol}", bar_format="{l_bar}{bar} [ Time left: {remaining} ]") as pbar:
+			for image in list_of_page_img:
+			    url = image.get_attribute("src")
+			    # print(f"Downloading Chapter {self.vol} page {str(count)}")
+			    urllib.request.urlretrieve(url, (save_path + self.manga_name + "/" + dir_name + "/"+ f"Page {count}.jpg"))
+			    count += 1
+			    chapters_left = len(list_of_page_img) - count
+			    pbar.update(1)
 
 		# Calling other function to do some stuff
 		self.jpg_to_pdf()
