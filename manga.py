@@ -5,13 +5,15 @@ from selenium.webdriver.support.ui import Select
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.options import Options
+# Importing img2pdf to convert jpg to pdf
+import img2pdf
+# Importing build-in modules
 import urllib.request 
 import os
 import sys
-import img2pdf
 import shutil
 from pathlib import Path
-from selenium.webdriver.chrome.options import Options
 
 # Sample URL
 # https://kissmanga.com/Manga/Great-Teacher-onizuka/
@@ -86,7 +88,7 @@ class Download:
 		# Making directory and putting this stuff in that directory
 		try:
 			os.mkdir(f"{save_path}{self.manga_name}/Chapter {self.vol}")
-			print("Making chapter directory...")
+			print(f"Making chapter {self.vol} directory...")
 		except:
 			pass
 		dir_name = f"Chapter {self.vol}"
@@ -108,7 +110,7 @@ class Download:
 
 		for image in list_of_page_img:
 		    url = image.get_attribute("src")
-		    print("Downloading page " + str(count))
+		    print(f"Downloading Chapter {self.vol} page {str(count)}")
 		    urllib.request.urlretrieve(url, (save_path + self.manga_name + "/" + dir_name + "/"+ f"Page {count}.jpg"))
 		    count += 1
 
