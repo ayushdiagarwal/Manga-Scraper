@@ -110,7 +110,7 @@ class Download:
 		list_of_page_img = self.browser.find_elements_by_xpath('//div[@id="divImage"]/p/img')
 		chapters_left = len(list_of_page_img) - count
 		# This thing does the downloading work and showing the progess bar
-		with tqdm(total=len(list_of_page_img), desc=f"Downloading Chapter {self.vol}", bar_format="{l_bar}{bar} [ Time left: {remaining} ]") as pbar:
+		with tqdm(total=len(list_of_page_img), desc=f"Downloading Chapter {self.vol}", bar_format="{l_bar}{bar:25} [ Time left: {remaining} ]") as pbar:
 			for image in list_of_page_img:
 			    url = image.get_attribute("src")
 			    # print(f"Downloading Chapter {self.vol} page {str(count)}")
