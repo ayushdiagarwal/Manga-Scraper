@@ -1,3 +1,4 @@
 selenium==3.141.0
-img2pdf==0.3.6
 tqdm==4.46.0
+Pillow==7.0.0
+requests==2.22.0

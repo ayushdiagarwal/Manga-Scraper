@@ -7,7 +7,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 # Importing img2pdf to convert jpg to pdf
-import img2pdf
+from PIL import Image
 # importing tqdm for progress bar
 from tqdm import tqdm
 # Importing build-in modules
@@ -16,6 +16,7 @@ import os
 import sys
 import shutil
 from pathlib import Path
+import requests
 
 # Sample URL
 # https://kissmanga.com/Manga/Great-Teacher-onizuka/
@@ -114,21 +115,37 @@ class Download:
 			for image in list_of_page_img:
 			    url = image.get_attribute("src")
 			    # print(f"Downloading Chapter {self.vol} page {str(count)}")
-			    urllib.request.urlretrieve(url, (save_path + self.manga_name + "/" + dir_name + "/"+ f"Page {count}.jpg"))
+			    # urllib.request.urlretrieve(url, (save_path + self.manga_name + "/" + dir_name + "/"+ f"Page {count}.jpg"))
+			    #####
+			    r = requests.get(url)
+			    with open((save_path + self.manga_name + "/" + dir_name + "/"+ f"Page {count}.jpg"), 'wb') as outfile:
+			        outfile.write(r.content)
+			    #####
 			    count += 1
 			    chapters_left = len(list_of_page_img) - count
 			    pbar.update(1)
 
 		# Calling other function to do some stuff
-		self.jpg_to_pdf()
+		self.to_pdf()
 		self.delete_folder()
 
 	# Converting all images to pdf
-	def jpg_to_pdf(self):
-		print("Making PDF...")
+	def to_pdf(self):
+		print("Making PDF...Through PIL")
 		os.chdir(f"{save_path}/{self.manga_name}/Chapter {self.vol}/")
-		with open(f"../Chapter {self.vol}.pdf", "wb") as f:
-			f.write(img2pdf.convert([i for i in sorted(os.listdir(), key=len) if i.endswith(".jpg")]))
+		count = 0
+		im_list = []
+
+		for i in sorted(os.listdir(), key=len):
+			if i.endswith(".jpg"):
+				img = Image.open(i)
+				if img.mode != "P":
+					if count == 0:
+						first = img
+					else:
+						im_list.append(img)
+					count += 1
+		first.save(f"../Chapter {self.vol}.pdf", "PDF" ,resolution=100.0, save_all=True, append_images=im_list)
 		os.chdir("../")
 
 
