@@ -55,22 +55,23 @@ class Download:
 		print(f"Getting chapters from {self.manga_name}...\nPlease Wait...")
 		try:
 			# This waits for the web page to load properly
-			title_tag = WebDriverWait(self.browser, 10).until(EC.presence_of_element_located((By.CLASS_NAME,"bigChar")))
+			title_tag = WebDriverWait(self.browser, 10).until(EC.presence_of_element_located((By.CLASS_NAME,"NavBtnSm")))
 			title_text = title_tag.text
 		except TimeoutException:
-		    print("Exception Occured: TimeoutException")
+		    print("Exception Occured:    TimeoutException")
 		    print("Couldn't get title! Please check the URL and the internet connection.\nPlease Retry")
-		    choice = input("If there is a captcha on the screen, please solve it and press \"y\" else press any other key and hit enter: ")
-		    if choice != "y" or choice == "Y":
-		    	self.finished()
-		    	sys.exit()
+		    self.finished()
+		    sys.exit()
+		# Clicking on show all button
+		show_btn = self.browser.find_element_by_class_name('ShowAllChapters')
+		show_btn.click()
 		# finding links of all chapters by xpath
-		lis_of_ch = self.browser.find_elements_by_xpath("//tbody/tr/td/a")
+		lis_of_ch = self.browser.find_elements_by_xpath("//body/div[2]/div/div/div/div/div[2]/a")
 		# reversing them as they are in reversed order
 		lis_of_ch = lis_of_ch[::-1]
 		self.chapters = []
 		for ch in lis_of_ch:
-			self.chapters.append(ch.get_attribute("href"))
+			self.chapters.append(ch.get_attribute("href").replace("-page-1", ""))
 		print(f"There are {len(self.chapters)} Chapters of {self.manga_name}\nPlease enter the range of chapters.")
 		# Getting range from user
 		self.low_ch = int(input("From Which Chapter: "))
@@ -104,55 +105,38 @@ class Download:
 		self.browser.get(url)
 		# Waiting for the webpage to load properly
 		try:
-		    drop_down_list = WebDriverWait(self.browser, 15).until(EC.presence_of_element_located((By.ID,"selectReadType")))
+			wait_for_img = WebDriverWait(self.browser, 10).until(EC.presence_of_element_located((By.CLASS_NAME,"ng-scope")))
+			print("Getting Images...")
 		except TimeoutException:
-		    print("Couldn't get title! Please check the URL and the internet connection.\nPlease Retry")
-		    choice = input("If there is a captcha on the screen, please solve it and press \"y\" else press any other key and hit enter: ")
-		    if choice != "y" or choice == "Y":
-		    	self.finished()
-		    	sys.exit()
-		# select = Select(drop_down_list)
-		# # Selecting the 'All Pages' option
-		# select.select_by_value('1')
-
+		    print("Exception Occured:    TimeoutException")
+		    sys.exit("Couldn't load chapter! Please check the internet connection.\nPlease Retry")
 		# got the list of images
-		list_of_page_img = []
-		names = []
-		for i in self.browser.find_elements_by_xpath('//div[@id="divImage"]/p/img'):
-			list_of_page_img.append(i)
-			names.append(i.get_attribute('text'))
-		# print(names)
+		list_of_page_img = self.browser.find_elements_by_class_name('img-fluid')
 		chapters_left = len(list_of_page_img) - count
 		# This thing does the downloading work and showing the progess bar
 		with tqdm(total=len(list_of_page_img), desc=f"Downloading Chapter {self.vol}", bar_format="{l_bar}{bar:25} [ Time left: {remaining} ]") as pbar:
 			for image in list_of_page_img:
-			    url = image.get_attribute("src")
+			    url = image.get_attribute("ng-src")
+			    print(f"url: {url}")
+			    if url == "":
+			    	url = image.get_attribute("src")
+			    print(f"url: {url}")
+			    
 			    # print(f"Downloading Chapter {self.vol} page {str(count)}")
 			    # urllib.request.urlretrieve(url, (save_path + self.manga_name + "/" + dir_name + "/"+ f"Page {count}.jpg"))
 			    #####
 			    r = requests.get(url)
 			    format = url.split(".")[-1]
 			    with open((save_path + self.manga_name + "/" + dir_name + "/"+ f"Page {count}.{format}"), 'wb') as outfile:
-			        outfile.write(r.content)			    #####
+			        outfile.write(r.content)
+			    #####
 			    count += 1
 			    chapters_left = len(list_of_page_img) - count
 			    pbar.update(1)
 
 		# Calling other function to do some stuff
-		
-		try:
-			self.to_pdf()
-		except:
-			print("The PDF ended in an error, trying an alternate method ...")
-			self.to_pdf_alt()
-		try:
-			self.delete_folder()
-		except:
-			print("Cannot delete the images folder, trying an alternate method ...")
-			try:
-				self.delete_folder_alt()
-			except:
-				print("Cannot delete the images folder, Try to delete it manually")
+		self.to_pdf()
+		self.delete_folder()
 
 	# Converting all images to pdf
 	def to_pdf(self):
@@ -162,51 +146,14 @@ class Download:
 		im_list = []
 
 		for i in sorted(os.listdir(), key=len):
-			# if i.endswith(".jpg"):
-			img = Image.open(i)
-			# if img.mode == "RGB":
-			# img.load()
-			# img.split()
-			if img.mode == 'RGBA':
-				print("This is probably gonna end up in an error, isn't it?")
-				old = img
-				img = Image.new('RGB', old.size, (255, 255, 255))  # white background
-				img.paste(old, mask=old.split()[3])      
-			# if img.mode != "P":
-			if count == 0:
-				first = img
-			else:
-				im_list.append(img)
-			count += 1
-			# else:
-			# 	print("Transparent Image...Can't Convert To PDF")
-		first.save(f"../Chapter {self.vol}.pdf", "PDF" ,resolution=100.0, save_all=True, append_images=im_list)
-		os.chdir("../")
-	def to_pdf_alt(self):
-		print("Making PDF...")
-		os.chdir(f"{save_path}/{self.manga_name}/Chapter {self.vol}/")
-		count = 0
-		im_list = []
-
-		for i in sorted(os.listdir(), key=len):
-			# if i.endswith(".jpg"):
-			img = Image.open(i)
-			# if img.mode == "RGB":
-			img.load()
-			img.split()
-			if img.mode == 'RGBA':
-				print("This is probably gonna end up in an error, isn't it?")
-				old = img
-				img = Image.new('RGB', old.size, (255, 255, 255))  # white background
-				img.paste(old, mask=old.split()[3])      
-			# if img.mode != "P":
-			if count == 0:
-				first = img
-			else:
-				im_list.append(img)
-			count += 1
-			# else:
-			# 	print("Transparent Image...Can't Convert To PDF")
+			if i.endswith(".jpg"):
+				img = Image.open(i)
+				if img.mode != "P":
+					if count == 0:
+						first = img
+					else:
+						im_list.append(img)
+					count += 1
 		first.save(f"../Chapter {self.vol}.pdf", "PDF" ,resolution=100.0, save_all=True, append_images=im_list)
 		os.chdir("../")
 
@@ -227,14 +174,7 @@ class Download:
 	# This deletes the image folder as it is not needed anymore
 	def delete_folder(self):
 		print("Deleting The Images Folder")
-		shutil.rmtree(f"Chapter {self.vol}")
-
-	def delete_folder_alt(self):
-		os.chdir(f"{save_path}/{self.manga_name}/Chapter {self.vol}/")
-		for i in os.listdir():
-			os.remove(i)
-		os.chdir("../")
-		os.remove(f"Chapter {self.vol}")
+		shutil.rmtree(f"Chapter {self.vol}/")
 
 	# This function does a pretty uneccesary job by changing the name of the manga to a good looking one
 	def change_name(self):
