@@ -69,9 +69,15 @@ class Download:
 		# reversing them as they are in reversed order
 		lis_of_ch = lis_of_ch[::-1]
 		self.chapters = []
+		self.ch_names = []
 		for ch in lis_of_ch:
 			self.chapters.append(ch.get_attribute("href"))
-		print(f"There are {len(self.chapters)} Chapters of {self.manga_name}\nPlease enter the range of chapters.")
+			self.ch_names.append(ch.text)
+			# print(ch.text)
+
+		# print(self.ch_names)
+		# print(lis_of_ch)
+		print(f"There are {len(self.chapters)} Indexes of {self.manga_name}\nPlease enter the range of chapters.")
 		# Getting range from user
 		self.low_ch = int(input("From Which Chapter: "))
 		self.high_ch = int(input("To which Chapter: "))
@@ -83,9 +89,14 @@ class Download:
 			print(f"Making {self.manga_name} directory...")
 		except:
 			print(f"{self.manga_name} directory already exists...")
-		for ch in self.chapters:
-			self.download_chapter(ch)
-			self.vol += 1
+		# for ch in self.chapters:
+		# 	self.download_chapter(ch)
+		# 	self.vol += 1
+
+		for i in range(len(self.chapters)):
+			self.current = i
+			self.download_chapter(self.chapters[self.current])
+			self.vol+=1
 		self.finished()
 
 	# This downloads each chapter
@@ -95,11 +106,11 @@ class Download:
 		self.check_if_chapter_exist()
 		# Making directory and putting this stuff in that directory
 		try:
-			os.mkdir(f"{save_path}{self.manga_name}/Chapter {self.vol}")
+			os.mkdir(f"{save_path}{self.manga_name}/{self.vol} - {self.ch_names[self.vol]}")
 			print(f"Making chapter {self.vol} directory...")
 		except:
 			pass
-		dir_name = f"Chapter {self.vol}"
+		dir_name = f"{self.vol} - {self.ch_names[self.vol]}"
 		count = 1
 		self.browser.get(url)
 		# Waiting for the webpage to load properly
@@ -114,7 +125,6 @@ class Download:
 		# select = Select(drop_down_list)
 		# # Selecting the 'All Pages' option
 		# select.select_by_value('1')
-
 		# got the list of images
 		list_of_page_img = []
 		names = []
@@ -139,31 +149,32 @@ class Download:
 			    pbar.update(1)
 
 		# Calling other function to do some stuff
-		delete = True
-		try:
-			self.to_pdf()
-		except:
-			print("The PDF ended in an error, trying an alternate method ...")
+		do = False
+		if do:
+			delete= True
 			try:
-				self.to_pdf_alt()
+				self.to_pdf()
 			except:
-				delete = False
-		if delete:
-			try:
-				self.delete_folder()
-			except:
-				print("Cannot delete the images folder, trying an alternate method ...")
+				print("The PDF ended in an error, trying an alternate method ...")
 				try:
-					self.delete_folder_alt()
+					self.to_pdf_alt()
 				except:
+					delete = False
+					print("Error Occured while making pdf ... Skipping PDF")
+			if delete:
+				try:
+					self.delete_folder()
+				except:
+					print("Cannot delete the images folder, trying an alternate method ...")
 					try:
-						os.chdir(f"{save_path}/{self.manga_name}/")
-						os.system(f'rm -rf "Chapter {self.vol}"')
-						print("Folder Deleted ...")
+						self.delete_folder_alt()
 					except:
-						print("Cannot delete the images folder, Try to delete it manually ...")
-		else:
-			print("Can't Make PDF ... Not Deleting Images Folder ...")
+						try:
+							os.chdir(f"{save_path}/{self.manga_name}/")
+							os.system(f'rm -rf "Chapter {self.vol}"')
+							print("Folder Deleted ...")
+						except:
+							print("Cannot delete the images folder, Try to delete it manually ...")
 
 	# Converting all images to pdf
 	def to_pdf(self):
@@ -191,7 +202,7 @@ class Download:
 			count += 1
 			# else:
 			# 	print("Transparent Image...Can't Convert To PDF")
-		first.save(f"../Chapter {self.vol}.pdf", "PDF" ,resolution=100.0, save_all=True, append_images=im_list)
+		first.save(f"../{self.vol} - Chapter {self.current}.pdf", "PDF" ,resolution=100.0, save_all=True, append_images=im_list)
 		os.chdir("../")
 	def to_pdf_alt(self):
 		print("Making PDF...")
@@ -239,14 +250,14 @@ class Download:
 	def delete_folder(self):
 		print("Deleting The Images Folder ...")
 		os.chdir(f"{save_path}/{self.manga_name}/")
-		shutil.rmtree(f"Chapter {self.vol}/")
+		shutil.rmtree(f"Chapter {self.vol}")
 
 	def delete_folder_alt(self):
 		os.chdir(f"{save_path}/{self.manga_name}/Chapter {self.vol}/")
 		for i in os.listdir():
 			os.remove(i)
 		os.chdir("../")
-		os.remove(f"Chapter {self.vol}")
+		os.rmdir(f"Chapter {self.vol}")
 
 	# This function does a pretty uneccesary job by changing the name of the manga to a good looking one
 	def change_name(self):
