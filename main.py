@@ -106,11 +106,11 @@ class Download:
 		self.check_if_chapter_exist()
 		# Making directory and putting this stuff in that directory
 		try:
-			os.mkdir(f"{save_path}{self.manga_name}/{self.vol} - {self.ch_names[self.vol]}")
+			os.mkdir(f"{save_path}{self.manga_name}/{self.vol}")
 			print(f"Making chapter {self.vol} directory...")
 		except:
 			pass
-		dir_name = f"{self.vol} - {self.ch_names[self.vol]}"
+		dir_name = f"{self.vol}"
 		count = 1
 		self.browser.get(url)
 		# Waiting for the webpage to load properly
@@ -141,40 +141,38 @@ class Download:
 			    # urllib.request.urlretrieve(url, (save_path + self.manga_name + "/" + dir_name + "/"+ f"Page {count}.jpg"))
 			    #####
 			    r = requests.get(url)
-			    format = url.split(".")[-1]
-			    with open((save_path + self.manga_name + "/" + dir_name + "/"+ f"Page {count}.{format}"), 'wb') as outfile:
-			        outfile.write(r.content)			    #####
+			    self.format = url.split(".")[-1]
+			    with open((save_path + self.manga_name + "/" + dir_name + "/"+ f"Page {count}.{self.format}"), 'wb') as outfile:
+			        outfile.write(r.content)			    #####	
 			    count += 1
 			    chapters_left = len(list_of_page_img) - count
 			    pbar.update(1)
 
 		# Calling other function to do some stuff
-		do = False
-		if do:
-			delete= True
-			try:
-				self.to_pdf()
-			except:
-				print("The PDF ended in an error, trying an alternate method ...")
-				try:
-					self.to_pdf_alt()
-				except:
-					delete = False
-					print("Error Occured while making pdf ... Skipping PDF")
-			if delete:
-				try:
-					self.delete_folder()
-				except:
-					print("Cannot delete the images folder, trying an alternate method ...")
-					try:
-						self.delete_folder_alt()
-					except:
-						try:
-							os.chdir(f"{save_path}/{self.manga_name}/")
-							os.system(f'rm -rf "Chapter {self.vol}"')
-							print("Folder Deleted ...")
-						except:
-							print("Cannot delete the images folder, Try to delete it manually ...")
+		self.to_cbr()
+
+		# Change this to call other functions
+		call = False
+		if call:
+			self.call_other_functions()
+
+
+	# Convert File to .cbr format
+	def to_cbr(self):
+		print("Compressing images to .cbr format ...")
+		os.chdir(f"{save_path}/{self.manga_name}/{self.vol}/")
+		file_name = f'{self.vol} - {self.ch_names[self.vol]}.cbr"'
+		cmd = 'zip -r "../' + file_name + f" *.{self.format}"
+		# print(cmd)
+		os.system(cmd)
+
+		# Deleting the images folder
+		self.del_folder()
+
+	def del_folder(self):
+		os.chdir("../")
+		shutil.rmtree(str(self.vol))
+
 
 	# Converting all images to pdf
 	def to_pdf(self):
@@ -231,6 +229,33 @@ class Download:
 			# 	print("Transparent Image...Can't Convert To PDF")
 		first.save(f"../Chapter {self.vol}.pdf", "PDF" ,resolution=100.0, save_all=True, append_images=im_list)
 		os.chdir("../")
+
+
+	def call_other_functions(self):
+		delete= True
+		try:
+			self.to_pdf()
+		except:
+			print("The PDF ended in an error, trying an alternate method ...")
+			try:
+				self.to_pdf_alt()
+			except:
+				delete = False
+				print("Error Occured while making pdf ... Skipping PDF")
+		if delete:
+			try:
+				self.delete_folder()
+			except:
+				print("Cannot delete the images folder, trying an alternate method ...")
+				try:
+					self.delete_folder_alt()
+				except:
+					try:
+						os.chdir(f"{save_path}/{self.manga_name}/")
+						os.system(f'rm -rf "Chapter {self.vol}"')
+						print("Folder Deleted ...")
+					except:
+						print("Cannot delete the images folder, Try to delete it manually ...")
 
 
 	# This function check if multiple chapters exist and asks to convert them into one 
