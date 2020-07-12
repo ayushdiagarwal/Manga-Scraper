@@ -20,7 +20,7 @@ Inspired From [Astrames](https://github.com/Astrames/kissmanga-downloader)
 * Add the location of ChromeDriver into environmental variables and save it as "chromedriver"
 
 ## Usage
-* Change the "save_path" variable in the starting of the `manga.py` file if you wanna change manga directory to somewhere else.(By Default it's the same directory as the script)
+* Change the "save_path" variable in the starting of the `main.py` file if you wanna change manga directory to somewhere else.(By Default it's the same directory as the script)
 * Execute `manga.py`.
 * Enter The URL of the manga from kissmanga.com
 * Enter the chapter range
@@ -29,4 +29,4 @@ Inspired From [Astrames](https://github.com/Astrames/kissmanga-downloader)
 ## Features
 
 * Downloads all images of a chapter and puts them in a seperate folder.
-* Creates A PDF of each chapter outside the directory and deletes the chapter directory as it is no longer needed.
+* Creates A CBR of each chapter outside the directory and deletes the chapter directory as it is no longer needed.
