@@ -55,12 +55,12 @@ class Download:
 		print(f"Getting chapters from {self.manga_name}...\nPlease Wait...")
 		try:
 			# This waits for the web page to load properly
-			title_tag = WebDriverWait(self.browser, 10).until(EC.presence_of_element_located((By.CLASS_NAME,"bigChar")))
+			title_tag = WebDriverWait(self.browser, 20).until(EC.presence_of_element_located((By.CLASS_NAME,"bigChar")))
 			title_text = title_tag.text
 		except TimeoutException:
 		    print("Exception Occured: TimeoutException")
-		    print("Couldn't get title! Please check the URL and the internet connection.\nPlease Retry")
-		    choice = input("If there is a captcha on the screen, please solve it and press \"y\" else press any other key and hit enter: ")
+		    print("Couldn't get the web page! Please check the URL and the internet connection.")
+		    choice = input("If the webpage is not loaded or if there is a captcha, please solve it\nPress \"y\" to continue and any other key to exit: ")
 		    if choice != "y" or choice == "Y":
 		    	self.finished()
 		    	sys.exit()
@@ -79,8 +79,8 @@ class Download:
 		# print(lis_of_ch)
 		print(f"There are {len(self.chapters)} Indexes of {self.manga_name}\nPlease enter the range of chapters.")
 		# Getting range from user
-		self.low_ch = int(input("From Which Chapter: "))
-		self.high_ch = int(input("To which Chapter: "))
+		self.low_ch = int(input("From Which Index: "))
+		self.high_ch = int(input("To which Index: "))
 		self.chapters = self.chapters[(self.low_ch-1):self.high_ch]
 
 		self.vol = self.low_ch
@@ -117,8 +117,8 @@ class Download:
 		try:
 		    drop_down_list = WebDriverWait(self.browser, 15).until(EC.presence_of_element_located((By.ID,"selectReadType")))
 		except TimeoutException:
-		    print("Couldn't get title! Please check the URL and the internet connection.\nPlease Retry")
-		    choice = input("If there is a captcha on the screen, please solve it and press \"y\" else press any other key and hit enter: ")
+		    print("Couldn't get the web page! Please check the URL and the internet connection.")
+		    choice = input("If the webpage is not loaded or if there is a captcha, please solve it\nPress \"y\" to continue and any other key to exit: ")
 		    if choice != "y" or choice == "Y":
 		    	self.finished()
 		    	sys.exit()
@@ -137,9 +137,6 @@ class Download:
 		with tqdm(total=len(list_of_page_img), desc=f"Downloading Chapter {self.vol}", bar_format="{l_bar}{bar:25} [ Time left: {remaining} ]") as pbar:
 			for image in list_of_page_img:
 			    url = image.get_attribute("src")
-			    # print(f"Downloading Chapter {self.vol} page {str(count)}")
-			    # urllib.request.urlretrieve(url, (save_path + self.manga_name + "/" + dir_name + "/"+ f"Page {count}.jpg"))
-			    #####
 			    r = requests.get(url)
 			    self.format = url.split(".")[-1]
 			    with open((save_path + self.manga_name + "/" + dir_name + "/"+ f"Page {count}.{self.format}"), 'wb') as outfile:
@@ -160,8 +157,18 @@ class Download:
 	# Convert File to .cbr format
 	def to_cbr(self):
 		print("Compressing images to .cbr format ...")
+		os.chdir(f"{save_path}/{self.manga_name}/")
+		file_name = f"""{self.vol} - {self.ch_names[self.vol-1]}"""
+		shutil.make_archive(file_name,"zip", str(self.vol))
+		os.rename(f"{file_name}.zip",f"{file_name}.cbr")
+
+		# Deleting the images folder
+		self.del_folder()
+
+	def to_cbr_old(self):
+		print("Compressing images to .cbr format ...")
 		os.chdir(f"{save_path}/{self.manga_name}/{self.vol}/")
-		file_name = f'{self.vol} - {self.ch_names[self.vol]}.cbr"'
+		file_name = f"""{self.vol} - {self.ch_names[self.vol-1]}.cbr"""
 		cmd = 'zip -r "../' + file_name + f" *.{self.format}"
 		# print(cmd)
 		os.system(cmd)
@@ -170,7 +177,7 @@ class Download:
 		self.del_folder()
 
 	def del_folder(self):
-		os.chdir("../")
+		print("Deleting Images Folder ...")
 		shutil.rmtree(str(self.vol))
 
 
