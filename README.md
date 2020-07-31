@@ -26,6 +26,7 @@ Inspired From [Astrames](https://github.com/Astrames/kissmanga-downloader)
 * Execute `manga.py`.
 * Enter The URL of the manga from kissmanga.com
 * Enter the chapter range
+* You might have to solve a captcha but only once.
 * Enjoy!
 
 ## Features
