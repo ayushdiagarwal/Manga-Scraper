@@ -6,8 +6,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
-# Importing img2pdf to convert jpg to pdf
-from PIL import Image
+from webdriver_manager.chrome import ChromeDriverManager
 # importing tqdm for progress bar
 from tqdm import tqdm
 # Importing build-in modules
@@ -44,7 +43,7 @@ class Download:
 	def __init__(self):
 		# Getting info about the manga
 		# self.browser = webdriver.Chrome(driver_path, options=Options)
-		self.browser = webdriver.Chrome(driver_path)
+		self.browser = webdriver.Chrome(ChromeDriverManager().install())
 		self.url = input("Enter the url of the manga: ")
 		self.change_name()
 		self.browser.get(self.url)
@@ -165,131 +164,11 @@ class Download:
 		# Deleting the images folder
 		self.del_folder()
 
-	def to_cbr_old(self):
-		print("Compressing images to .cbr format ...")
-		os.chdir(f"{save_path}/{self.manga_name}/{self.vol}/")
-		file_name = f"""{self.vol} - {self.ch_names[self.vol-1]}.cbr"""
-		cmd = 'zip -r "../' + file_name + f" *.{self.format}"
-		# print(cmd)
-		os.system(cmd)
 
-		# Deleting the images folder
-		self.del_folder()
-
+	# Deletes the stuff
 	def del_folder(self):
 		print("Deleting Images Folder ...")
 		shutil.rmtree(str(self.vol))
-
-
-	# Converting all images to pdf
-	def to_pdf(self):
-		print("Making PDF...")
-		os.chdir(f"{save_path}/{self.manga_name}/Chapter {self.vol}/")
-		count = 0
-		im_list = []
-
-		for i in sorted(os.listdir(), key=len):
-			# if i.endswith(".jpg"):
-			img = Image.open(i)
-			# if img.mode == "RGB":
-			# img.load()
-			# img.split()
-			if img.mode == 'RGBA':
-				print("This is probably gonna end up in an error, isn't it?")
-				old = img
-				img = Image.new('RGB', old.size, (255, 255, 255))  # white background
-				img.paste(old, mask=old.split()[3])      
-			# if img.mode != "P":
-			if count == 0:
-				first = img
-			else:
-				im_list.append(img)
-			count += 1
-			# else:
-			# 	print("Transparent Image...Can't Convert To PDF")
-		first.save(f"../{self.vol} - Chapter {self.current}.pdf", "PDF" ,resolution=100.0, save_all=True, append_images=im_list)
-		os.chdir("../")
-	def to_pdf_alt(self):
-		print("Making PDF...")
-		os.chdir(f"{save_path}/{self.manga_name}/Chapter {self.vol}/")
-		count = 0
-		im_list = []
-
-		for i in sorted(os.listdir(), key=len):
-			# if i.endswith(".jpg"):
-			img = Image.open(i)
-			# if img.mode == "RGB":
-			img.load()
-			img.split()
-			if img.mode == 'RGBA':
-				print("This is probably gonna end up in an error, isn't it?")
-				old = img
-				img = Image.new('RGB', old.size, (255, 255, 255))  # white background
-				img.paste(old, mask=old.split()[3])      
-			# if img.mode != "P":
-			if count == 0:
-				first = img
-			else:
-				im_list.append(img)
-			count += 1
-			# else:
-			# 	print("Transparent Image...Can't Convert To PDF")
-		first.save(f"../Chapter {self.vol}.pdf", "PDF" ,resolution=100.0, save_all=True, append_images=im_list)
-		os.chdir("../")
-
-
-	def call_other_functions(self):
-		delete= True
-		try:
-			self.to_pdf()
-		except:
-			print("The PDF ended in an error, trying an alternate method ...")
-			try:
-				self.to_pdf_alt()
-			except:
-				delete = False
-				print("Error Occured while making pdf ... Skipping PDF")
-		if delete:
-			try:
-				self.delete_folder()
-			except:
-				print("Cannot delete the images folder, trying an alternate method ...")
-				try:
-					self.delete_folder_alt()
-				except:
-					try:
-						os.chdir(f"{save_path}/{self.manga_name}/")
-						os.system(f'rm -rf "Chapter {self.vol}"')
-						print("Folder Deleted ...")
-					except:
-						print("Cannot delete the images folder, Try to delete it manually ...")
-
-
-	# This function check if multiple chapters exist and asks to convert them into one 
-	def check_if_multiple_pdfs_exist(self):
-		if len(os.listdir()) > 1:
-			print("Multiple PDFs exist in that manga directory. Do you want to to combine them into one?")
-			choice = input('Press "y" for yes and "n" for no')
-		if choice == "y":
-			pass
-		elif choice == "n":
-			pass
-		else:
-			print("Invalid Choice\n")
-			self.check_if_multiple_pdfs_exist()
-
-	# This deletes the image folder as it is not needed anymore
-	def delete_folder(self):
-		print("Deleting The Images Folder ...")
-		os.chdir(f"{save_path}/{self.manga_name}/")
-		shutil.rmtree(f"Chapter {self.vol}")
-
-	def delete_folder_alt(self):
-		os.chdir(f"{save_path}/{self.manga_name}/Chapter {self.vol}/")
-		for i in os.listdir():
-			os.remove(i)
-		os.chdir("../")
-		os.rmdir(f"Chapter {self.vol}")
 
 	# This function does a pretty uneccesary job by changing the name of the manga to a good looking one
 	def change_name(self):
@@ -312,7 +191,7 @@ class Download:
 	# This function checks if the chapter pdf already exist or not
 	def check_if_chapter_exist(self):
 		try:
-			if f"Chapter {self.vol}.pdf" in os.listdir(self.manga_name):
+			if f"{self.vol} - {self.ch_names[self.vol-1]}.cbr" in os.listdir(self.manga_name):
 				choice = input('Chapter already exists. Do you wanna overwrite?("y" for yes and "n" for no)')
 				if choice == "y" or choice == "Y":
 					print("Overwriting...")
