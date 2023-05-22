@@ -1,5 +1,5 @@
 selenium==3.141.0
 tqdm==4.46.0
-requests==2.22.0
+requests==2.31.0
 webdriver-manager==3.2.1
 
